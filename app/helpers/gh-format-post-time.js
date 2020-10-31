@@ -44,7 +44,7 @@ export function formatPostTime(timeago, {timezone = 'ect/UTC', draft, scheduled,
     }
 
     // Else, render just the date if published, or the time & date if scheduled
-    let format = scheduled ? `[at] HH:mm [${utcOffset}] [on] DD MMM YYYY` : 'DD MMM YYYY';
+    let format = scheduled ? `[at] HH:mm [${utcOffset}] [on] YYYY/M/D` : 'YYYY/M/D';
     return time.format(format);
 }
 
