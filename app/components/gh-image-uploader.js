@@ -80,7 +80,7 @@ export default Component.extend({
     description: computed('text', 'altText', function () {
         let altText = this.altText;
 
-        return this.text || (altText ? `Upload image of "${altText}"` : 'Upload an image');
+        return this.text || (altText ? `Upload image/video of "${altText}"` : 'Upload an image/video');
     }),
 
     progressStyle: computed('uploadPercentage', function () {
@@ -239,9 +239,9 @@ export default Component.extend({
             let validExtensions = this.extensions.join(', .').toUpperCase();
             validExtensions = `.${validExtensions}`;
 
-            message = `The image type you uploaded is not supported. Please use ${validExtensions}`;
+            message = `The image/video type you uploaded is not supported. Please use ${validExtensions}`;
         } else if (isRequestEntityTooLargeError(error)) {
-            message = 'The image you uploaded was larger than the maximum file size your server allows.';
+            message = 'The image/video you uploaded was larger than the maximum file size your server allows.';
         } else if (error.payload.errors && !isBlank(error.payload.errors[0].message)) {
             message = error.payload.errors[0].message;
         } else {
