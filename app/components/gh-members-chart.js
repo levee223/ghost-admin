@@ -6,7 +6,7 @@ import {computed, get} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-const DATE_FORMAT = 'YYYY/M/D';
+const DATE_FORMAT = 'll';
 
 export default Component.extend({
     ajax: service(),
