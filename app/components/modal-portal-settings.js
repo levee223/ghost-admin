@@ -43,6 +43,8 @@ export default ModalComponent.extend({
     customIcon: null,
     showLinksPage: false,
     showLeaveSettingsModal: false,
+    freeSignupRedirect: undefined,
+    paidSignupRedirect: undefined,
     confirm() {},
 
     allowSelfSignup: alias('settings.membersAllowFreeSignup'),
@@ -148,11 +150,13 @@ export default ModalComponent.extend({
         if (portalButtonIcon && !defaultIconKeys.includes(portalButtonIcon)) {
             this.set('customIcon', this.settings.get('portalButtonIcon'));
         }
+
         this.siteUrl = this.config.get('blogUrl');
     },
 
     didInsertElement() {
         this._super(...arguments);
+        this.get('settings.errors').clear();
         run.later(this, function () {
             this.set('hidePreviewFrame', false);
         }, 1200);
@@ -174,6 +178,14 @@ export default ModalComponent.extend({
 
         togglePortalName(showSignupName) {
             this.settings.set('portalName', showSignupName);
+        },
+
+        setPaidSignupRedirect(url) {
+            this.set('paidSignupRedirect', url);
+        },
+
+        setFreeSignupRedirect(url) {
+            this.set('freeSignupRedirect', url);
         },
 
         confirm() {
@@ -263,6 +275,14 @@ export default ModalComponent.extend({
 
         leaveSettings() {
             this.closeModal();
+        },
+
+        validateFreeSignupRedirect() {
+            return this._validateSignupRedirect(this.get('freeSignupRedirect'), 'membersFreeSignupRedirect');
+        },
+
+        validatePaidSignupRedirect() {
+            return this._validateSignupRedirect(this.get('paidSignupRedirect'), 'membersPaidSignupRedirect');
         }
     },
 
@@ -274,6 +294,30 @@ export default ModalComponent.extend({
         } else {
             allowedPlans.push(plan);
             this.settings.set('portalPlans', [...allowedPlans]);
+        }
+    },
+
+    _validateSignupRedirect(url, type) {
+        let errMessage = `Please enter a valid URL`;
+        this.get('settings.errors').remove(type);
+        this.get('settings.hasValidated').removeObject(type);
+
+        if (url === null) {
+            this.get('settings.errors').add(type, errMessage);
+            this.get('settings.hasValidated').pushObject(type);
+            return false;
+        }
+
+        if (url === undefined) {
+            // Not initialised
+            return;
+        }
+
+        if (url.href.startsWith(this.siteUrl)) {
+            const path = url.href.replace(this.siteUrl, '');
+            this.settings.set(type, path);
+        } else {
+            this.settings.set(type, url.href);
         }
     },
 
@@ -324,6 +368,11 @@ export default ModalComponent.extend({
     }),
 
     saveTask: task(function* () {
+        this.send('validateFreeSignupRedirect');
+        this.send('validatePaidSignupRedirect');
+        if (this.get('settings.errors').length !== 0) {
+            return;
+        }
         yield this.settings.save();
         this.closeModal();
     }).drop()
