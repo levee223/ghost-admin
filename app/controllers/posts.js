@@ -69,6 +69,13 @@ export default Controller.extend({
         this.availableOrders = ORDERS;
         this.availableVisibilities = VISIBILITIES;
         this.setProperties(DEFAULT_QUERY_PARAMS.posts);
+
+        if (this.feature.get('emailAnalytics') && !this.availableOrders.findBy('name', 'Open rate')) {
+            this.availableOrders.push({
+                name: 'Open rate',
+                value: 'email.open_rate desc'
+            });
+        }
     },
 
     postsInfinityModel: alias('model'),
