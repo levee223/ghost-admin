@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - '4.0'
       - 'renovate/*'
 jobs:
   prod-build:
@@ -12,7 +13,7 @@ jobs:
     name: Production Build
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: '12.18.0'
 
@@ -20,7 +21,7 @@ jobs:
       - run: grunt shell:ember:prod
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
         with:
           status: ${{ job.status }}
         env:
@@ -31,7 +32,7 @@ jobs:
     name: Lint
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: '12.18.0'
 
@@ -39,7 +40,7 @@ jobs:
       - run: yarn lint:js
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
         with:
           status: ${{ job.status }}
         env:
@@ -57,7 +58,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: '12.18.0'
 
@@ -67,7 +68,7 @@ jobs:
           BROWSER: ${{ matrix.browser }}
 
       - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: failure() && github.event_name == 'push' && (github.ref == 'refs/heads/4.0' || github.ref == 'refs/heads/master')
         with:
           status: ${{ job.status }}
         env:
