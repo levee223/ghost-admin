@@ -1,14 +1,16 @@
-import Route from '@ember/routing/route';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject as service} from '@ember/service';
 
-export default Route.extend({
+export default AuthenticatedRoute.extend({
     billing: service(),
+    ui: service(),
 
     queryParams: {
         action: {refreshModel: true}
     },
 
     beforeModel(transition) {
+        this._super(...arguments);
         this.billing.set('previousTransition', transition);
     },
 
@@ -18,6 +20,14 @@ export default Route.extend({
         }
 
         this.billing.setBillingWindowOpen(true);
+    },
+
+    activate() {
+        this.ui.set('showTour', false);
+    },
+
+    deactivate() {
+        this.ui.set('showTour', true);
     },
 
     actions: {
@@ -31,7 +41,7 @@ export default Route.extend({
                         ? transition.intent.url
                         : '');
 
-                if (destinationUrl.includes('/billing')) {
+                if (destinationUrl?.includes('/billing')) {
                     isBillingTransition = true;
                 }
             }
