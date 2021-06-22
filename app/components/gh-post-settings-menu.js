@@ -1,12 +1,11 @@
 import Component from '@ember/component';
-import SettingsMenuMixin from 'ghost-admin/mixins/settings-menu-component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default Component.extend(SettingsMenuMixin, {
+export default Component.extend({
     feature: service(),
     store: service(),
     config: service(),
@@ -20,6 +19,7 @@ export default Component.extend(SettingsMenuMixin, {
 
     post: null,
 
+    showSettingsMenu: false,
     _showSettingsMenu: false,
 
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
@@ -66,6 +66,19 @@ export default Component.extend(SettingsMenuMixin, {
         return urlParts.join(' > ');
     }),
 
+    isViewingSubview: computed('showSettingsMenu', {
+        get() {
+            return false;
+        },
+        set(key, value) {
+            // Not viewing a subview if we can't even see the PSM
+            if (!this.showSettingsMenu) {
+                return false;
+            }
+            return value;
+        }
+    }),
+
     didReceiveAttrs() {
         this._super(...arguments);
 
@@ -86,12 +99,12 @@ export default Component.extend(SettingsMenuMixin, {
 
     actions: {
         showSubview(subview) {
-            this._super(...arguments);
+            this.set('isViewingSubview', true);
             this.set('subview', subview);
         },
 
         closeSubview() {
-            this._super(...arguments);
+            this.set('isViewingSubview', false);
             this.set('subview', null);
         },
 
@@ -108,7 +121,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -118,7 +131,7 @@ export default Component.extend(SettingsMenuMixin, {
          * triggered by user manually changing slug
          */
         updateSlug(newSlug) {
-            return this.updateSlug
+            return this.updateSlugTask
                 .perform(newSlug)
                 .catch((error) => {
                     this.showError(error);
@@ -136,7 +149,7 @@ export default Component.extend(SettingsMenuMixin, {
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogDate', dateString);
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             }
         },
 
@@ -149,7 +162,7 @@ export default Component.extend(SettingsMenuMixin, {
                 post.validate({property: 'publishedAtBlog'});
             } else {
                 post.set('publishedAtBlogTime', time);
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             }
         },
 
@@ -163,7 +176,7 @@ export default Component.extend(SettingsMenuMixin, {
 
             post.set('customExcerpt', excerpt);
 
-            return post.validate({property: 'customExcerpt'}).then(() => this.savePost.perform());
+            return post.validate({property: 'customExcerpt'}).then(() => this.savePostTask.perform());
         },
 
         setHeaderInjection(code) {
@@ -176,7 +189,7 @@ export default Component.extend(SettingsMenuMixin, {
 
             post.set('codeinjectionHead', code);
 
-            return post.validate({property: 'codeinjectionHead'}).then(() => this.savePost.perform());
+            return post.validate({property: 'codeinjectionHead'}).then(() => this.savePostTask.perform());
         },
 
         setFooterInjection(code) {
@@ -189,7 +202,7 @@ export default Component.extend(SettingsMenuMixin, {
 
             post.set('codeinjectionFoot', code);
 
-            return post.validate({property: 'codeinjectionFoot'}).then(() => this.savePost.perform());
+            return post.validate({property: 'codeinjectionFoot'}).then(() => this.savePostTask.perform());
         },
 
         setMetaTitle(metaTitle) {
@@ -211,7 +224,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -234,7 +247,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -257,7 +270,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -280,7 +293,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -303,7 +316,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -326,7 +339,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -349,7 +362,7 @@ export default Component.extend(SettingsMenuMixin, {
                     return;
                 }
 
-                return this.savePost.perform();
+                return this.savePostTask.perform();
             });
         },
 
@@ -360,7 +373,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -373,7 +386,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -386,7 +399,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -399,7 +412,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -412,7 +425,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -425,7 +438,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 this.post.rollbackAttributes();
             });
@@ -447,7 +460,7 @@ export default Component.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.savePost.perform().catch((error) => {
+            this.savePostTask.perform().catch((error) => {
                 this.showError(error);
                 post.rollbackAttributes();
             });

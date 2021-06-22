@@ -34,7 +34,7 @@
                                     </p>
                                 </div>
                                 <button type="button" class="gh-btn gh-btn-green" disabled={{eq this.settings.membersSignupAccess "none"}} {{on "click" this.openPortalSettings}} data-test-toggle="portal-settings">
-                                    <span>Customise Portal &rarr;</span>
+                                    <span>Customize Portal &rarr;</span>
                                 </button>
                             </div>
                         </div>
@@ -139,7 +139,7 @@
                             {{#if this.fetchDefaultProduct.isRunning}}
                                 Loading...
                             {{else}}
-                                {{#if (enable-developer-experiments)}}
+                                {{#if (feature "multipleProducts")}}
                                     <GhMembershipProductsAlpha
                                         @products={{this.products}}
                                         @confirmProductSave={{this.confirmProductSave}}
@@ -236,6 +236,7 @@
             @model={{hash
                 preloadTask=this.saveSettingsTask
                 openStripeSettings=this.openStripeConnect
+                products=this.products
             }}
             @close={{this.closePortalSettings}}
             @modifier="full-overlay portal-settings" />

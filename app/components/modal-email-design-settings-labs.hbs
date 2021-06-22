@@ -28,8 +28,6 @@
                 <fieldset class="modal-fullsettings-form">
                     <div class="modal-fullsettings-section first">
                         <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title">Header image</h4>
-
                             <GhUploader
                                 @extensions={{this.imageExtensions}}
                                 @paramsHash={{hash purpose="image"}}
@@ -37,12 +35,16 @@
                                 as |uploader|
                             >
                                 <div class="modal-fullsettings-uploader">
+                                    <div class="gh-header-img-desc">
+                                        <h4 class="modal-fullsettings-title">Header image</h4>
+                                        <p>Optional, recommended size 1200x600</p>
+                                    </div>
                                     {{#if uploader.isUploading}}
-                                        <div class="gh-portal-button-icon">
+                                        <div class="gh-header-img-container">
                                             <div class="gh-loading-spinner"></div>
                                         </div>
                                     {{else if this.headerImage}}
-                                        <div class="gh-header-img-container">
+                                        <div class="gh-header-img">
                                             <img
                                                 class="gh-header-img-thumbnail"
                                                 src={{this.headerImage}}
@@ -54,7 +56,7 @@
                                             </button>
                                         </div>
                                     {{else}}
-                                        <button type="button" class="gh-btn gh-header-img-uploadicon" data-tooltip="Upload image" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="header-image">
+                                        <button type="button" class="gh-btn gh-header-img-uploadicon" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="header-image">
                                             <span>{{svg-jar "upload-fill" class="w5 h5"}}</span>
                                         </button>
                                         <div style="display:none">
@@ -66,16 +68,12 @@
                                                 data-test-file-input="icon" />
                                         </div>
                                     {{/if}}
-                                    <div class="gh-header-img-desc">
-                                        <h4>An optional branded image</h4>
-                                        <p>For best result use 1200x600 PNG image</p>
-                                    </div>
                                 </div>
                             </GhUploader>
                         </GhFormGroup>
 
-                        <GhFormGroup>
-                            <h4 class="modal-fullsettings-title {{if (not this.settings.icon) "disabled"}}">Show publication icon</h4>
+                        <GhFormGroup data-tooltip={{if (not this.settings.icon) "A publication icon must be set in Branding settings."}}>
+                            <h4 class="modal-fullsettings-title {{if (not this.settings.icon) "disabled"}}">Publication icon</h4>
                             <div class="for-switch small {{if (not this.settings.icon) "disabled"}}">
                                 <label class="switch" for="show-header">
                                     <input
@@ -91,7 +89,7 @@
                             </div>
                         </GhFormGroup>
                         <GhFormGroup>
-                            <h4 class="modal-fullsettings-title">Show publication title</h4>
+                            <h4 class="modal-fullsettings-title">Publication title</h4>
                             <div class="for-switch small">
                                 <label class="switch" for="show-title">
                                     <input
@@ -108,7 +106,22 @@
                     </div>
                     <div class="modal-fullsettings-section divider-top">
                         <GhFormGroup>
-                            <h4 class="modal-fullsettings-title">Show post feature image</h4>
+                            <h4 class="modal-fullsettings-title gh-email-design-alignment">Header style</h4>
+                            <div class="gh-email-design-typography-wrapper header">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.titleFontCategory}}
+                                        @onChange={{fn this.changeSetting "titleFontCategory"}}
+                                    />
+                                </div>
+                                <div class="gh-btn-group icons">
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Feature image</h4>
                             <div class="for-switch small">
                                 <label class="switch" for="show-feature-image">
                                     <input
@@ -122,30 +135,17 @@
                                 </label>
                             </div>
                         </GhFormGroup>
-                        <GhFormGroup @classNames="vertical">
-                            <h4 class="modal-fullsettings-title gh-email-design-alignment">
-                                <span>Post title style</span>
-                                <div class="gh-btn-group icons">
-                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
-                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
-                                </div>
-                            </h4>
-                            <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                                <GhFontSelector
-                                    @selected={{this.titleFontCategory}}
-                                    @onChange={{fn this.changeSetting "titleFontCategory"}}
-                                />
-                            </div>
-                        </GhFormGroup>
                     </div>
                     <div class="modal-fullsettings-section">
-                        <GhFormGroup @classNames="vertical">
+                        <GhFormGroup>
                             <h4 class="modal-fullsettings-title">Body style</h4>
-                            <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                                <GhFontSelector
-                                    @selected={{this.bodyFontCategory}}
-                                    @onChange={{fn this.changeSetting "bodyFontCategory"}}
-                                />
+                            <div class="gh-email-design-typography-wrapper">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.bodyFontCategory}}
+                                        @onChange={{fn this.changeSetting "bodyFontCategory"}}
+                                    />
+                                </div>
                             </div>
                         </GhFormGroup>
                     </div>
@@ -197,7 +197,7 @@
                 <div class="gh-members-emailpreview-container">
                     <div class="gh-members-emailpreview-faux">
                         <p>
-                            <span class="strong">{{this.config.blogTitle}}</span> &lt;{{this.settings.membersFromAddress}}&gt;
+                            <span class="strong">{{this.config.blogTitle}}</span> &lt;{{full-email-address this.settings.membersFromAddress}}&gt;
                         </p>
                         <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
                     </div>
@@ -225,10 +225,11 @@
                         </div>
                         {{#if this.showFeatureImage}}
                             <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
+                            <div class="gh-members-emailpreview-featureimage-caption">Feature image caption</div>
                         {{/if}}
                         <div class="gh-members-emailpreview-content {{if (eq this.bodyFontCategory "sans_serif") "sans-serif"}}">
                             <p>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
-                            <p>Over there on the left you’ll see some settings that allow you to customise the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we’ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
+                            <p>Over there on the left you’ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we’ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                             <p>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
                         </div>
                         <div class="gh-members-emailpreview-footer">
@@ -236,7 +237,7 @@
                                 {{{this.footerContent}}}
                             </div>
                             <div class="gh-members-emailpreview-footersite">
-                                <span>{{this.config.blogTitle}} &copy; – </span> <a href="javascript:">Unsubscribe</a>
+                                <span>{{this.config.blogTitle}} &copy; {{this.copyrightYear}} – </span> <a href="javascript:">Unsubscribe</a>
                             </div>
                         </div>
                         <div class="gh-members-emailpreview-badge {{if (not this.showBadge) "hide"}}">

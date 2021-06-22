@@ -5,9 +5,23 @@
         {{on "mousedown" this.trackMousedown}}
         {{on "mouseup" this.focusEditor}}
     >
+        {{#if (feature "featureImageMeta")}}
+            <GhEditorFeatureImage
+                @image={{@featureImage}}
+                @updateImage={{@setFeatureImage}}
+                @clearImage={{@clearFeatureImage}}
+                @alt={{@featureImageAlt}}
+                @updateAlt={{@setFeatureImageAlt}}
+                @caption={{@featureImageCaption}}
+                @updateCaption={{@setFeatureImageCaption}}
+                @forceButtonDisplay={{or this.titleIsHovered this.titleIsFocused}}
+            />
+        {{/if}}
+
         <GhTextarea
             @class="gh-editor-title"
             @placeholder={{@titlePlaceholder}}
+            @shouldFocus={{or @titleAutofocus false}}
             @tabindex="1"
             @autoExpand=".gh-koenig-editor"
             @value={{readonly this.title}}
@@ -15,13 +29,16 @@
             @focus-out={{optional @onTitleBlur}}
             @keyDown={{this.onTitleKeydown}}
             @didCreateTextarea={{this.registerTitleElement}}
+            {{on "focus" (fn (mut this.titleIsFocused) true)}}
+            {{on "blur" (fn (mut this.titleIsFocused) false)}}
+            {{on "mouseover" (fn (mut this.titleIsHovered) true)}}
+            {{on "mouseleave" (fn (mut this.titleIsHovered) false)}}
             data-test-editor-title-input={{true}}
         />
 
         <KoenigEditor
             @mobiledoc={{@body}}
             @placeholder={{@bodyPlaceholder}}
-            @autofocus={{or @bodyAutofocus false}}
             @spellcheck={{true}}
             @onChange={{@onBodyChange}}
             @didCreateEditor={{this.onEditorCreated}}

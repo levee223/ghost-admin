@@ -351,7 +351,7 @@ describe('Acceptance: Editor', function () {
 
             // expect countdown to show warning that post is scheduled to be published
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.match(/Will be published in (4|5) minutes/);
+                .to.match(/Will be published\s+in (4|5) minutes/);
 
             expect(
                 find('[data-test-publishmenu-trigger]').textContent.trim(),
@@ -361,7 +361,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled post status'
-            ).to.match(/Will be published in (4|5) minutes/);
+            ).to.match(/Will be published\s+in (4|5) minutes/);
 
             // Re-schedule
             await click('[data-test-publishmenu-trigger]');
@@ -388,7 +388,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled status text'
-            ).to.match(/Will be published in (4|5) minutes/);
+            ).to.match(/Will be published\s+in (4|5) minutes/);
 
             // unschedule
             await click('[data-test-publishmenu-trigger]');
@@ -543,7 +543,7 @@ describe('Acceptance: Editor', function () {
                 .to.equal('Scheduled');
             // expect countdown to show warning, that post is scheduled to be published
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.match(/Will be published in (4|5) minutes/);
+                .to.match(/Will be published\s+in (4|5) minutes/);
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
@@ -572,35 +572,6 @@ describe('Acceptance: Editor', function () {
             expect(savedAuthors.length).to.equal(2);
             expect(savedAuthors[0].name).to.equal('Primary');
             expect(savedAuthors[1].name).to.equal('Waldo');
-        });
-
-        it('autosaves when title loses focus', async function () {
-            let role = this.server.create('role', {name: 'Administrator'});
-            this.server.create('user', {name: 'Admin', roles: [role]});
-
-            await visit('/editor');
-
-            // NOTE: there were checks here for the title element having focus
-            // but they were very temperamental whilst running tests in the
-            // browser so they've been left out for now
-
-            expect(
-                currentURL(),
-                'url on initial visit'
-            ).to.equal('/editor/post');
-
-            await click('[data-test-editor-title-input]');
-            await blur('[data-test-editor-title-input]');
-
-            expect(
-                find('[data-test-editor-title-input]').value,
-                'title value after autosave'
-            ).to.equal('');
-
-            expect(
-                currentURL(),
-                'url after autosave'
-            ).to.equal('/editor/post/1');
         });
 
         it('saves post settings fields', async function () {

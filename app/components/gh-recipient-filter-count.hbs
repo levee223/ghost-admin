@@ -1,0 +1,5 @@
+{{#if @filter}}
+<GhMembersFilterCount @filter={{concat "subscribed:true+(" @filter ")"}} @knownCount={{@knownCount}} />
+{{else}}
+no members
+{{/if}}

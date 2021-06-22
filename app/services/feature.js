@@ -54,6 +54,9 @@ export default Service.extend({
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
     launchComplete: feature('launchComplete', {user: true}),
     matchHelper: feature('matchHelper'),
+    multipleProducts: feature('multipleProducts', {developer: true}),
+    featureImageMeta: feature('featureImageMeta', {developer: true}),
+    psmRedesign: feature('psmRedesign', {developer: true}),
 
     _user: null,
 

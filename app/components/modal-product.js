@@ -1,7 +1,9 @@
 import EmberObject, {action} from '@ember/object';
 import ModalBase from 'ghost-admin/components/modal-base';
+import ProductBenefitItem from '../models/product-benefit-item';
 import classic from 'ember-classic-decorator';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
+import {A as emberA} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
@@ -15,6 +17,18 @@ const CURRENCIES = currencies.map((currency) => {
     };
 });
 
+let BENEFITSDATA = emberA([
+    ProductBenefitItem.create({
+        label: 'Benefit 1'
+    }),
+    ProductBenefitItem.create({
+        label: 'Benefit 2'
+    }),
+    ProductBenefitItem.create({
+        label: 'Benefit 3'
+    })
+]);
+
 // TODO: update modals to work fully with Glimmer components
 @classic
 export default class ModalProductPrice extends ModalBase {
@@ -27,6 +41,8 @@ export default class ModalProductPrice extends ModalBase {
     @tracked currency = 'usd';
     @tracked errors = EmberObject.create();
     @tracked stripePlanError = '';
+    @tracked benefits = [];
+    @tracked newBenefit = null;
 
     confirm() {}
 
@@ -50,6 +66,11 @@ export default class ModalProductPrice extends ModalBase {
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice.amount / 100);
         }
+        this.benefits = this.product.get('benefits') || BENEFITSDATA;
+        this.newBenefit = ProductBenefitItem.create({
+            isNew: true,
+            label: ''
+        });
     }
 
     get title() {
@@ -107,8 +128,10 @@ export default class ModalProductPrice extends ModalBase {
             interval: 'year',
             type: 'recurring'
         });
-        const savedProduct = yield this.product.save();
-        yield this.confirm(savedProduct);
+
+        yield this.product.save();
+
+        yield this.confirm();
         this.send('closeModal');
     }
 
@@ -127,7 +150,34 @@ export default class ModalProductPrice extends ModalBase {
         }
     }
 
+    addNewBenefitItem(item) {
+        item.set('isNew', false);
+        this.benefits.pushObject(item);
+
+        this.newBenefit = ProductBenefitItem.create({isNew: true, label: ''});
+    }
+
     actions = {
+        addBenefit(item) {
+            return item.validate().then(() => {
+                this.addNewBenefitItem(item);
+            });
+        },
+        deleteBenefit(item) {
+            if (!item) {
+                return;
+            }
+            this.benefits.removeObject(item);
+        },
+        updateLabel(label, benefitItem) {
+            if (!benefitItem) {
+                return;
+            }
+
+            if (benefitItem.get('label') !== label) {
+                benefitItem.set('label', label);
+            }
+        },
         confirm() {
             this.confirmAction(...arguments);
         },
