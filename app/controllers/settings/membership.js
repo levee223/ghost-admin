@@ -309,13 +309,20 @@ export default class MembersAccessController extends Controller {
 
     @task({drop: true})
     *fetchProducts() {
-        this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
+        this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price,benefits'});
         this.product = this.products.firstObject;
         this.setupPortalProduct(this.product);
     }
 
     @task({drop: true})
     *saveSettingsTask(options) {
+        if (!this.settings.get('defaultContentVisibility')) {
+            const oldValue = this.settings.changedAttributes().defaultContentVisibility?.[0];
+            if (oldValue) {
+                this.settings.set('defaultContentVisibility', oldValue);
+            }
+        }
+
         if (!this.feature.get('multipleProducts')) {
             yield this.validateStripePlans({updatePortalPreview: false});
 

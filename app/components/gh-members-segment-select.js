@@ -6,6 +6,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class GhMembersSegmentSelect extends Component {
     @service store;
+    @service feature;
 
     @tracked _options = [];
 
@@ -58,21 +59,25 @@ export default class GhMembersSegmentSelect extends Component {
 
     @task
     *fetchOptionsTask() {
-        const options = yield [{
-            name: 'Free members',
-            segment: 'status:free',
-            class: 'segment-status-free'
-        }, {
-            name: 'Paid members',
-            segment: 'status:-free', // paid & comped
-            class: 'segment-status-paid'
-        }];
+        const options = yield [];
+
+        if (!this.args.hideDefaultSegments) {
+            options.push({
+                name: 'Free members',
+                segment: 'status:free',
+                class: 'segment-status-free'
+            }, {
+                name: 'Paid members',
+                segment: 'status:-free', // paid & comped
+                class: 'segment-status-paid'
+            });
+        }
 
         // fetch all labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
         // TODO: add `include: 'count.members` to query once API is fixed
         const labels = yield this.store.query('label', {limit: 'all'});
 
-        if (labels.length > 0) {
+        if (labels.length > 0 && !this.args.hideLabels) {
             const labelsGroup = {
                 groupName: 'Labels',
                 options: []
@@ -88,6 +93,29 @@ export default class GhMembersSegmentSelect extends Component {
             });
 
             options.push(labelsGroup);
+        }
+        if (this.feature.get('multipleProducts')) {
+            // fetch all products w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
+            // TODO: add `include: 'count.members` to query once API supports
+            const products = yield this.store.query('product', {limit: 'all'});
+
+            if (products.length > 0) {
+                const productsGroup = {
+                    groupName: 'Products',
+                    options: []
+                };
+
+                products.forEach((product) => {
+                    productsGroup.options.push({
+                        name: product.name,
+                        segment: `product:${product.slug}`,
+                        count: product.count?.members,
+                        class: 'segment-product'
+                    });
+                });
+
+                options.push(productsGroup);
+            }
         }
 
         this._options = options;

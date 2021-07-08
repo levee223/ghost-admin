@@ -93,6 +93,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     emailSubject: attr('string'),
     html: attr('string'),
     visibility: attr('string'),
+    visibilityFilter: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
     mobiledoc: attr('json-string', {defaultValue: () => JSON.parse(JSON.stringify(BLANK_DOC))}),
@@ -169,6 +170,27 @@ export default Model.extend(Comparable, ValidationEngine, {
             return '';
         }
         return this.get('ghostPaths.url').join(blogUrl, previewKeyword, uuid);
+    }),
+
+    isPublic: computed('visibility', function () {
+        return this.visibility === 'public' ? true : false;
+    }),
+
+    visibilitySegment: computed('visibility', 'visibilityFilter', 'isPublic', function () {
+        if (this.isPublic) {
+            return this.settings.get('defaultContentVisibility') === 'paid' ? 'status:-free' : 'status:free,status:-free';
+        } else {
+            if (this.visibility === 'members') {
+                return 'status:free,status:-free';
+            }
+            if (this.visibility === 'paid') {
+                return 'status:-free';
+            }
+            if (this.visibility === 'filter') {
+                return this.visibilityFilter;
+            }
+            return this.visibility;
+        }
     }),
 
     // check every second to see if we're past the scheduled time

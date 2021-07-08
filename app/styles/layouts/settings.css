@@ -506,6 +506,10 @@
     opacity: 1;
 }
 
+.td-item-action.gh-btn {
+    width: 80px;
+}
+
 @media (max-width: 1400px) {
     .theme-directory {
         grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -1534,6 +1538,18 @@ p.theme-validation-details {
     margin: 36px 0;
 }
 
+.gh-default-post-access .ember-power-select-multiple-trigger {
+    padding: 8px;
+}
+
+.gh-default-post-access .segment-totals {
+    display: none;
+}
+
+.gh-setting-members-access .ember-power-select-status-icon {
+    right: 20px;
+}
+
 .gh-setting-members-tierscontainer {
     margin-top: 4vmin;
 }
@@ -1678,6 +1694,7 @@ p.theme-validation-details {
 
 .gh-setting-members-currencylabel span {
     margin-right: 0;
+    pointer-events: none;
 }
 
 

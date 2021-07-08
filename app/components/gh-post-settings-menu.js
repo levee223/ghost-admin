@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
+import {action} from '@ember/object';
 import {alias, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -17,10 +18,11 @@ export default Component.extend({
     settings: service(),
     ui: service(),
 
+    tagName: '',
+
     post: null,
 
-    showSettingsMenu: false,
-    _showSettingsMenu: false,
+    isViewingSubview: false,
 
     canonicalUrlScratch: alias('post.canonicalUrlScratch'),
     customExcerptScratch: alias('post.customExcerptScratch'),
@@ -66,35 +68,17 @@ export default Component.extend({
         return urlParts.join(' > ');
     }),
 
-    isViewingSubview: computed('showSettingsMenu', {
-        get() {
-            return false;
-        },
-        set(key, value) {
-            // Not viewing a subview if we can't even see the PSM
-            if (!this.showSettingsMenu) {
-                return false;
-            }
-            return value;
-        }
-    }),
+    willDestroyElement() {
+        let post = this.post;
+        let errors = post.get('errors');
 
-    didReceiveAttrs() {
-        this._super(...arguments);
-
-        // fired when menu is closed
-        if (!this.showSettingsMenu && this._showSettingsMenu) {
-            let post = this.post;
-            let errors = post.get('errors');
-
-            // reset the publish date if it has an error
-            if (errors.has('publishedAtBlogDate') || errors.has('publishedAtBlogTime')) {
-                post.set('publishedAtBlogTZ', post.get('publishedAtUTC'));
-                post.validate({attribute: 'publishedAtBlog'});
-            }
+        // reset the publish date if it has an error
+        if (errors.has('publishedAtBlogDate') || errors.has('publishedAtBlogTime')) {
+            post.set('publishedAtBlogTZ', post.get('publishedAtUTC'));
+            post.validate({attribute: 'publishedAtBlog'});
         }
 
-        this._showSettingsMenu = this.showSettingsMenu;
+        this.setSidebarWidthVariable(0);
     },
 
     actions: {
@@ -150,6 +134,24 @@ export default Component.extend({
             } else {
                 post.set('publishedAtBlogDate', dateString);
                 return this.savePostTask.perform();
+            }
+        },
+
+        async setVisibility(segment) {
+            this.post.set('visibilityFilter', segment);
+            try {
+                await this.post.validate({property: 'visibility'});
+                await this.post.validate({property: 'visibilityFilter'});
+                if (this.post.changedAttributes().visibilityFilter) {
+                    await this.savePostTask.perform();
+                }
+            } catch (e) {
+                if (!e) {
+                    // validation error
+                    return;
+                }
+
+                throw e;
             }
         },
 
@@ -478,5 +480,14 @@ export default Component.extend({
         if (error) {
             this.notifications.showAPIError(error);
         }
+    },
+
+    setSidebarWidthFromElement: action(function (element) {
+        const width = element.getBoundingClientRect().width;
+        this.setSidebarWidthVariable(width);
+    }),
+
+    setSidebarWidthVariable(width) {
+        document.documentElement.style.setProperty('--editor-sidebar-width', `${width}px`);
     }
 });

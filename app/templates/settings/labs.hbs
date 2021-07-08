@@ -246,7 +246,7 @@
                         <div>
                             <h4 class="gh-expandable-title">Match helper</h4>
                             <p class="gh-expandable-description">
-                               Experimental <code>\{{match}}</code> helper for themes.
+                               Experimental <code>\{{match}}</code> helper for themes
                             </p>
                         </div>
                         <div class="for-switch">
@@ -257,9 +257,9 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Multiple Products</h4>
+                            <h4 class="gh-expandable-title">Multiple products</h4>
                             <p class="gh-expandable-description">
-                               Allow multiple products on site.
+                               Allow multiple products on site
                             </p>
                         </div>
                         <div class="for-switch">
@@ -270,26 +270,26 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Feature image redesign with caption support</h4>
+                            <h4 class="gh-expandable-title">Gated content in emails</h4>
                             <p class="gh-expandable-description">
-                               Moves feature image uploader to top of editor screen and adds alt/caption input.
+                                Experimental feature to gate email card only to free/paid members
                             </p>
                         </div>
                         <div class="for-switch">
-                           <GhFeatureFlag @flag="featureImageMeta" />
+                           <GhFeatureFlag @flag="emailCardSegments" />
                         </div>
                     </div>
                 </div>
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Post settings menu behaviour change</h4>
+                            <h4 class="gh-expandable-title">Show saved state in editor</h4>
                             <p class="gh-expandable-description">
-                               Switches post settings menu behaviour from a popover to a collapsible sidebar.
+                                Post status in editor shows "- Saved" when a post has no unsaved changes
                             </p>
                         </div>
                         <div class="for-switch">
-                           <GhFeatureFlag @flag="psmRedesign" />
+                           <GhFeatureFlag @flag="savedIndicator" />
                         </div>
                     </div>
                 </div>

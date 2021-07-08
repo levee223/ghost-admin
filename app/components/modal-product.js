@@ -17,18 +17,6 @@ const CURRENCIES = currencies.map((currency) => {
     };
 });
 
-let BENEFITSDATA = emberA([
-    ProductBenefitItem.create({
-        label: 'Benefit 1'
-    }),
-    ProductBenefitItem.create({
-        label: 'Benefit 2'
-    }),
-    ProductBenefitItem.create({
-        label: 'Benefit 3'
-    })
-]);
-
 // TODO: update modals to work fully with Glimmer components
 @classic
 export default class ModalProductPrice extends ModalBase {
@@ -66,10 +54,10 @@ export default class ModalProductPrice extends ModalBase {
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice.amount / 100);
         }
-        this.benefits = this.product.get('benefits') || BENEFITSDATA;
+        this.benefits = this.product.get('benefits') || emberA([]);
         this.newBenefit = ProductBenefitItem.create({
             isNew: true,
-            label: ''
+            name: ''
         });
     }
 
@@ -92,6 +80,7 @@ export default class ModalProductPrice extends ModalBase {
 
     @action
     close(event) {
+        this.reset();
         event?.preventDefault?.();
         this.closeModal();
     }
@@ -99,6 +88,12 @@ export default class ModalProductPrice extends ModalBase {
     setCurrency(event) {
         const newCurrency = event.value;
         this.currency = newCurrency;
+    }
+
+    reset() {
+        this.newBenefit = ProductBenefitItem.create({isNew: true, name: ''});
+        const savedBenefits = this.product.benefits.filter(benefit => !!benefit.id);
+        this.product.set('benefits', savedBenefits);
     }
 
     @task({drop: true})
@@ -110,6 +105,11 @@ export default class ModalProductPrice extends ModalBase {
         if (this.stripePlanError) {
             return;
         }
+
+        if (!this.newBenefit.get('isBlank')) {
+            yield this.send('addBenefit', this.newBenefit);
+        }
+
         const monthlyAmount = this.stripeMonthlyAmount * 100;
         const yearlyAmount = this.stripeYearlyAmount * 100;
         this.product.set('monthlyPrice', {
@@ -128,7 +128,7 @@ export default class ModalProductPrice extends ModalBase {
             interval: 'year',
             type: 'recurring'
         });
-
+        this.product.set('benefits', this.benefits);
         yield this.product.save();
 
         yield this.confirm();
@@ -154,7 +154,7 @@ export default class ModalProductPrice extends ModalBase {
         item.set('isNew', false);
         this.benefits.pushObject(item);
 
-        this.newBenefit = ProductBenefitItem.create({isNew: true, label: ''});
+        this.newBenefit = ProductBenefitItem.create({isNew: true, name: ''});
     }
 
     actions = {
@@ -169,13 +169,16 @@ export default class ModalProductPrice extends ModalBase {
             }
             this.benefits.removeObject(item);
         },
+        reorderItems() {
+            this.product.set('benefits', this.benefits);
+        },
         updateLabel(label, benefitItem) {
             if (!benefitItem) {
                 return;
             }
 
-            if (benefitItem.get('label') !== label) {
-                benefitItem.set('label', label);
+            if (benefitItem.get('name') !== label) {
+                benefitItem.set('name', label);
             }
         },
         confirm() {

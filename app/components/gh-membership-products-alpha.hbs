@@ -12,20 +12,18 @@
             <p class="gh-product-card-description">
                 {{product.description}}
             </p>
-            {{#if (and (eq productIdx 0) (not (eq products.length 1)))}}
-                <span class="gh-badge gh-badge-green">Available in Portal</span>
-            {{/if}}
         </div>
-        <div class="gh-product-card-block">
-            <h4>Benefits <span class="counter">(3)</span></h4>
+        <div class="gh-product-card-block benefits-block">
+            <h4>Benefits <span class="counter">({{if product.benefits.length product.benefits.length "0"}})</span></h4>
+            {{#if product.benefits.length}}
             <ul class="benefits">
                 {{#each product.benefits as |benefit|}}
-                    <li>{{svg-jar "check"}} {{benefit.label}} </li>
+                    <li>{{svg-jar "check"}} {{benefit.name}} </li>
                 {{/each}}
-                <li>{{svg-jar "check"}} Access to all J&amp;A Watch J&amp;A episodes, past and future!</li>
-                <li>{{svg-jar "check"}} An exclusive AD-FREE extra video episode of J&amp;A AMA every other week!</li>
-                <li>{{svg-jar "check"}} Includes Discord benefits</li>
             </ul>
+            {{else}}
+            <p class="gh-product-card-description">No benefits added for this product.</p>
+            {{/if}}
         </div>
         <div class="gh-product-card-block">
             <div class="gh-product-price-container">

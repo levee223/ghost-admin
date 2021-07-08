@@ -8,6 +8,9 @@
         {{else if (eq @post.email.status "submitted")}}
             and sent to {{gh-pluralize @post.email.emailCount "member"}}
         {{/if}}
+        {{#if (feature "savedIndicator")}}
+            {{if (not @hasDirtyAttributes) "- Saved"}}
+        {{/if}}
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
             Will be published
@@ -16,9 +19,15 @@
             {{/if}}
             {{this.scheduledTime}}
         </time>
+        {{#if (feature "savedIndicator")}}
+            {{if (not @hasDirtyAttributes) "- Saved"}}
+        {{/if}}
     {{else if @post.isNew}}
         New
     {{else}}
         Draft
+        {{#if (feature "savedIndicator")}}
+            {{if (not @hasDirtyAttributes) "- Saved"}}
+        {{/if}}
     {{/if}}
 </div>

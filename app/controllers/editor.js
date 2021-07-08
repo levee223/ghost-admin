@@ -7,7 +7,6 @@ import moment from 'moment';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
-import {captureException, captureMessage} from '@sentry/browser';
 import {inject as controller} from '@ember/controller';
 import {get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
@@ -491,6 +490,13 @@ export default Controller.extend({
 
             return post;
         } catch (error) {
+            this.set('post.status', prevStatus);
+
+            if (error === undefined && this.post.errors.length === 0) {
+                // "handled" error from _saveTask
+                return;
+            }
+
             // trigger upgrade modal if forbidden(403) error
             if (isHostLimitError(error)) {
                 this.post.rollbackAttributes();
@@ -504,8 +510,6 @@ export default Controller.extend({
                 this.send('error', error);
                 return;
             }
-
-            this.set('post.status', prevStatus);
 
             if (!options.silent) {
                 let errorOrMessages = error || this.get('post.errors.messages');
@@ -598,41 +602,21 @@ export default Controller.extend({
     _savePostTask: task(function* (options) {
         let {post} = this;
 
-        // retry save every 5 seconds for a total of 30secs
-        // only retry if we get a ServerUnreachable error (code 0) from the browser
-        let attempts = 0;
-        let maxAttempts = 6;
-        let startTime = moment();
-        let success = false;
-        while (attempts < maxAttempts && !success) {
-            try {
-                yield post.save(options);
-                success = true;
-                this.notifications.closeAlerts('post.save');
+        try {
+            yield post.save(options);
+        } catch (error) {
+            if (isServerUnreachableError(error)) {
+                const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
+                this._showErrorAlert(prevStatus, newStatus, error);
 
-                if (attempts !== 0 && this.config.get('sentry_dsn')) {
-                    let totalSeconds = moment().diff(startTime, 'seconds');
-                    captureMessage('Saving post required multiple attempts', {attempts, totalSeconds});
-                }
-            } catch (error) {
-                attempts += 1;
-
-                if (isServerUnreachableError(error) && attempts < maxAttempts) {
-                    yield timeout(5 * 1000);
-                } else if (isServerUnreachableError(error)) {
-                    const status = this.post.status;
-                    this._showErrorAlert(status, status, error);
-                    if (this.config.get('sentry_dsn')) {
-                        captureException(error);
-                    }
-
-                    // simulate a validation error so we don't end up on a 500 screen
-                    throw undefined;
-                } else {
-                    throw error;
-                }
+                // simulate a validation error so we don't end up on a 500 screen
+                throw undefined;
             }
+
+            throw error;
         }
+
+        this.notifications.closeAlerts('post.save');
 
         // remove any unsaved tags
         // NOTE: `updateTags` changes `hasDirtyAttributes => true`.
@@ -1002,7 +986,7 @@ export default Controller.extend({
         }
 
         if (isServerUnreachableError(error)) {
-            errorMessage = 'Unable to connect, please check your connection and press Ctrl/Cmd+S to retry.';
+            errorMessage = 'Unable to connect, please check your connection and try again';
         } else if (error && isString(error)) {
             errorMessage = error;
         } else if (error && isEmberArray(error)) {
