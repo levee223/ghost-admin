@@ -154,9 +154,9 @@ export default Controller.extend({
             .sort((a, b) => a.name.localeCompare(b.name));
     }),
 
-    canManageSnippets: computed('session.user.{isOwnerOrAdmin,isEditor}', function () {
+    canManageSnippets: computed('session.user.{isAdmin,isEditor}', function () {
         let {user} = this.session;
-        if (user.get('isOwnerOrAdmin') || user.get('isEditor')) {
+        if (user.get('isAdmin') || user.get('isEditor')) {
             return true;
         }
         return false;
@@ -284,6 +284,15 @@ export default Controller.extend({
         },
 
         toggleReAuthenticateModal() {
+            if (this.showReAuthenticateModal) {
+                // closing, re-attempt save if needed
+                if (this._reauthSave) {
+                    this.saveTask.perform(this._reauthSaveOptions);
+                }
+
+                this._reauthSave = false;
+                this._reauthSaveOptions = null;
+            }
             this.toggleProperty('showReAuthenticateModal');
         },
 
@@ -490,6 +499,12 @@ export default Controller.extend({
 
             return post;
         } catch (error) {
+            if (this.showReAuthenticateModal) {
+                this._reauthSave = true;
+                this._reauthSaveOptions = options;
+                return;
+            }
+
             this.set('post.status', prevStatus);
 
             if (error === undefined && this.post.errors.length === 0) {
@@ -941,7 +956,7 @@ export default Controller.extend({
             actions = `<a href="${path}" target="_blank">View ${type}</a>`;
         }
 
-        notifications.showNotification(message, {type: 'success', actions: (actions && actions.htmlSafe()), delayed});
+        notifications.showNotification(message, {type: 'success', actions: (actions && htmlSafe(actions)), delayed});
     },
 
     async _showScheduledNotification(delayed) {
@@ -969,9 +984,9 @@ export default Controller.extend({
             description.push(`(UTC${publishedAtBlogTZ.format('Z').replace(/([+-])0/, '$1').replace(/:00/, '')})</span>`);
         }
 
-        description = description.join(' ').htmlSafe();
+        description = htmlSafe(description.join(' '));
 
-        let actions = `<a href="${previewUrl}" target="_blank">View Preview</a>`.htmlSafe();
+        let actions = htmlSafe(`<a href="${previewUrl}" target="_blank">View Preview</a>`);
 
         return this.notifications.showNotification(title, {description, actions, type: 'success', delayed});
     },

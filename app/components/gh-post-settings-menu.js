@@ -44,8 +44,8 @@ export default Component.extend({
     twitterImage: or('post.twitterImage', 'post.featureImage', 'settings.twitterImage', 'settings.coverImage'),
     twitterTitle: or('twitterTitleScratch', 'seoTitle'),
 
-    showVisibilityInput: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
-    showEmailNewsletter: or('session.user.isOwner', 'session.user.isAdmin', 'session.user.isEditor'),
+    showVisibilityInput: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
+    showEmailNewsletter: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
 
     seoTitle: computed('metaTitleScratch', 'post.titleScratch', function () {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
@@ -55,9 +55,13 @@ export default Component.extend({
         const urlParts = [];
 
         if (this.post.canonicalUrl) {
-            const canonicalUrl = new URL(this.post.canonicalUrl);
-            urlParts.push(canonicalUrl.host);
-            urlParts.push(...canonicalUrl.pathname.split('/').reject(p => !p));
+            try {
+                const canonicalUrl = new URL(this.post.canonicalUrl);
+                urlParts.push(canonicalUrl.host);
+                urlParts.push(...canonicalUrl.pathname.split('/').reject(p => !p));
+            } catch (e) {
+                // no-op, invalid URL
+            }
         } else {
             const blogUrl = new URL(this.config.get('blogUrl'));
             urlParts.push(blogUrl.host);
@@ -69,6 +73,8 @@ export default Component.extend({
     }),
 
     willDestroyElement() {
+        this._super(...arguments);
+
         let post = this.post;
         let errors = post.get('errors');
 

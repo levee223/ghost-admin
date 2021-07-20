@@ -1,10 +1,12 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class SettingsMembersDefaultPostAccess extends Component {
     @service settings;
     @service feature;
+    @tracked showSegmentError;
 
     get options() {
         const defaultOptions = [{
@@ -29,7 +31,7 @@ export default class SettingsMembersDefaultPostAccess extends Component {
         if (this.feature.get('multipleProducts')) {
             defaultOptions.push({
                 name: 'A segment',
-                description: 'Members with any of the selected products',
+                description: 'Members with any of the selected tiers',
                 value: 'filter',
                 icon: 'members-segment',
                 icon_color: 'yellow'
@@ -56,6 +58,10 @@ export default class SettingsMembersDefaultPostAccess extends Component {
     setVisibility(segment) {
         if (segment) {
             this.settings.set('defaultContentVisibility', segment);
+            this.showSegmentError = false;
+        } else {
+            this.settings.set('defaultContentVisibility', '');
+            this.showSegmentError = true;
         }
     }
 
